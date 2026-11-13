@@ -2,7 +2,7 @@
 
 The shared whiteboard. Every agent reads this before starting and updates it before stopping (protocol: `RULES.md` Section 8). Newest log entries go at the top of the Activity Log.
 
-**Last updated:** 2026-11-13 by Claude (documentation set creation)
+**Last updated:** 2026-11-13 by Codex
 
 ---
 
@@ -20,15 +20,15 @@ The shared whiteboard. Every agent reads this before starting and updates it bef
 | Phase | Module or task | Status | Tests | Last touched | Notes |
 |---|---|---|---|---|---|
 | Docs | Eight-document set | DONE | n/a | 2026-11-13 | PRD, Design_Doc, Tech_Stack_DOC, Roadmap, Future_Enhancements, RULES, AGENT_BOARD, PROJECT_MEMORY |
-| 1 | Scaffold, models, config | NOT STARTED | 0 | n/a | First task: P1.1 |
-| 1 | `knowledge.py` (M0) and `data/tokyo.json` | NOT STARTED | 0 | n/a | Data values are placeholders until the owner verifies them |
+| 1 | Scaffold, models, config | DONE | 11 passed | 2026-11-13 | P1.1 to P1.4 and P1.6 complete |
+| 1 | `knowledge.py` (M0) and `data/tokyo.json` | IN PROGRESS | 11 passed | 2026-11-13 | 13 seed places; owner choice needed for the 14th high-effort entry; data remains unverified |
 | 2 | `expert.py` (M1) | NOT STARTED | 0 | n/a | Rules R1 to R5 |
 | 3 | `greedy.py` and `astar.py` (M3, M2) | NOT STARTED | 0 | n/a | Prototype-verified A* logic is in `Design_Doc.md` Section 8.6 |
 | 4 | `planner.py` and `cli.py` | NOT STARTED | 0 | n/a | |
 | 5 | `experiments.py`, report material | NOT STARTED | 0 | n/a | |
 | 6 | Optional extras | NOT STARTED | 0 | n/a | Only after Phase 5 |
 
-Full-suite test count: **0** (no code yet).
+Full-suite test count: **11 passed** (`python3 -m pytest -q`).
 
 ## 3. Repo map
 
@@ -36,20 +36,21 @@ Items marked "(planned)" do not exist yet. Remove the mark when the file is crea
 
 ```
 DOCS/                          eight markdown docs (exist)
-travelplanner/__init__.py      (planned)
-travelplanner/config.py        (planned)
-travelplanner/models.py        (planned)
-travelplanner/knowledge.py     (planned)
+travelplanner/__init__.py      version 0.1.0
+travelplanner/config.py        Config dataclass
+travelplanner/models.py        Place, Profile, Stop, DayPlan, Plan
+travelplanner/knowledge.py     M0 helpers and city loader
 travelplanner/expert.py        (planned)
 travelplanner/astar.py         (planned)
 travelplanner/greedy.py        (planned)
 travelplanner/planner.py       (planned)
 travelplanner/cli.py           (planned)
 travelplanner/experiments.py   (planned)
-data/tokyo.json                (planned)
-tests/                         (planned)
-results/                       (planned)
-README.md, CHANGELOG.md, requirements.txt, pytest.ini, .gitignore   (planned)
+data/tokyo.json                13 placeholder seed places, verified=false
+tests/test_models_config.py
+tests/test_knowledge.py
+results/                       output directory
+README.md, CHANGELOG.md, requirements.txt, pytest.ini, .gitignore
 ```
 
 ## 4. Commands
@@ -77,6 +78,7 @@ python -m travelplanner.experiments                                 # Phase 5
 | OI-1 | Confirm with the instructor that this project is acceptable, and what the report and viva require | Owner | Open |
 | OI-2 | Decide which cities are in scope (Tokyo first; Kyoto and Osaka optional) | Owner | Open |
 | OI-3 | Set scores, durations, and opening hours for the Tokyo places and verify coordinates and hours from official sources | Owner | Open |
+| OI-4 | Choose the additional high-effort Tokyo seed place required to reach the 14-place minimum | Owner | Open |
 
 ## 7. Decisions
 
@@ -107,6 +109,13 @@ python -m travelplanner.experiments                                 # Phase 5
 - **Thin later days:** with a small data file, later days may have few or no stops. This is expected; the output should say so.
 
 ## 9. Activity log (newest first)
+
+### 2026-11-13 | Codex | Started Phase 1 foundation
+- Did: created package scaffold, shared models/config, M0 helpers, Tokyo placeholder data, and 11 tests. P1.1-P1.4 and P1.6 are complete.
+- Files: `travelplanner/`, `tests/`, `data/tokyo.json`, setup files, Phase 1 status docs.
+- Verified: `.venv/bin/python -m pytest -q` -> 11 passed.
+- Notes: data has 13 seed places. The 14th high-effort place is explicitly the owner's choice; kept unfilled rather than inventing data. `verified` remains false. Dependency installation could not reach PyPI, so the venv uses available system packages; Matplotlib is not installed.
+- Next: owner selects high-effort seed place; then finish P1.5 and proceed with Phase 2.
 
 ### 2026-11-13 | Claude | Created the eight-document set
 - Did: wrote PRD, Design_Doc, Tech_Stack_DOC, Roadmap, Future_Enhancements, RULES, AGENT_BOARD, PROJECT_MEMORY for the Japan Travel Planner. Prototyped the planner outside the repo to check the spec.

@@ -10,12 +10,14 @@ Design details are in `Design_Doc.md`. Status of the moment is in `AGENT_BOARD.m
 
 Goal: package skeleton, shared types, config, the Tokyo data file, and M0 helpers.
 
-- [ ] P1.1 Repo scaffold: `travelplanner/`, `tests/`, `data/`, `results/`, `requirements.txt`, `pytest.ini`, `.gitignore`, `README.md`, `CHANGELOG.md`
-- [ ] P1.2 `models.py`: `Place`, `Profile`, `Stop`, `DayPlan`, `Plan`
-- [ ] P1.3 `config.py`: `Config` with the defaults in `Design_Doc.md` Section 5
-- [ ] P1.4 `knowledge.py`: `to_minutes`, `to_clock`, `haversine_km`, `travel_min`, `load_city` with validation
+- [x] P1.1 Repo scaffold: `travelplanner/`, `tests/`, `data/`, `results/`, `requirements.txt`, `pytest.ini`, `.gitignore`, `README.md`, `CHANGELOG.md`
+- [x] P1.2 `models.py`: `Place`, `Profile`, `Stop`, `DayPlan`, `Plan`
+- [x] P1.3 `config.py`: `Config` with the defaults in `Design_Doc.md` Section 5
+- [x] P1.4 `knowledge.py`: `to_minutes`, `to_clock`, `haversine_km`, `travel_min`, `load_city` with validation
 - [ ] P1.5 `data/tokyo.json`: 14 to 18 places from the seed list, `"verified": false`
-- [ ] P1.6 Tests: models/config and knowledge
+- [x] P1.6 Tests: models/config and knowledge
+
+P1.5 remains open: 13 named seed locations are present. The design calls for 14 to 18 and identifies the additional high-effort location as the owner's choice; it has not been invented.
 
 Done when: `pytest -q` passes and `load_city("data/tokyo.json")` returns places and the start point.
 

@@ -2,7 +2,7 @@
 
 **Purpose:** the compact, current handoff for a new agent. Read this after `RULES.md` and `AGENT_BOARD.md`; do **not** scan the repository to learn project state. This is a memory aid, not a replacement for `Design_Doc.md`.
 
-**Snapshot:** 2026-11-13. Documentation is complete. **No code exists yet.** Test count: 0.
+**Snapshot:** 2026-11-13. Documentation is complete. Phase 1 foundation, models/config, knowledge helpers, and tests are implemented; Tokyo seed data has 13 places and is still unverified. Test count: 11 passed.
 
 ---
 
@@ -22,7 +22,7 @@ Authority order: owner instruction, `Design_Doc.md`, `PRD.md`, `Roadmap.md`, the
 | Area | State | Evidence |
 |---|---|---|
 | Documentation set | **Complete** | Eight markdown files exist |
-| Phase 1 foundation and data | Not started | No files yet |
+| Phase 1 foundation and data | In progress | P1.1-P1.4, P1.6 implemented; owner choice for 14th high-effort seed place remains |
 | Phase 2 expert system | Not started | |
 | Phase 3 search (A*, Greedy) | Not started | Logic is prototype-verified in `Design_Doc.md` Section 8.6 |
 | Phase 4 pipeline and CLI | Not started | |
@@ -35,7 +35,7 @@ Authority order: owner instruction, `Design_Doc.md`, `PRD.md`, `Roadmap.md`, the
 
 ## Planned surface: use these contracts
 
-None of these exist yet. When a file is created, mark it here as implemented.
+Implemented files are listed in the current repo map in `AGENT_BOARD.md`.
 
 | File | Main entry points |
 |---|---|
@@ -80,9 +80,9 @@ Test plan (targets, not results): models/config, knowledge, expert, A* (brute-fo
 
 ## Current handoff
 
-Next task is **Phase 1, P1.1**: create the repo scaffold, then models, config, `knowledge.py`, and `data/tokyo.json` (14 to 18 places from the seed list, `"verified": false`). Then Phase 2 (expert system) and Phase 3 (search, test-first).
+Next task is **Phase 1, P1.5**: the owner needs to choose the additional high-effort Tokyo seed place so the file reaches the planned 14-place minimum. Do not invent it. Then finish Phase 1 and proceed to Phase 2 (expert system), followed by Phase 3 (search, test-first).
 
-Items needing the owner (do not guess): OI-1 instructor approval of the project, OI-2 which cities, OI-3 place scores, durations, hours, and verification.
+Items needing the owner (do not guess): OI-1 instructor approval of the project, OI-2 which cities, OI-3 place scores, durations, hours, and verification, and OI-4 the additional high-effort Tokyo place.
 
 ---
 
