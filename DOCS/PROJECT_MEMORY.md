@@ -2,7 +2,7 @@
 
 **Purpose:** the compact, current handoff for a new agent. Read this after `RULES.md` and `AGENT_BOARD.md`; do **not** scan the repository to learn project state. This is a memory aid, not a replacement for `Design_Doc.md`.
 
-**Snapshot:** 2026-11-14. Phases 1 and 2 are complete for the multi-city planner. The master dataset, data layer, expert rules R1-R6, and their tests are implemented. Full suite: 22 passed with `python3 -m pytest -q`.
+**Snapshot:** 2026-11-14. Phases 1 to 3 are complete for the multi-city planner. The data layer, expert rules, A* search, Greedy baseline, and tests are implemented. Full suite: 88 passed with `python3 -m pytest -q`.
 
 ---
 
@@ -24,7 +24,7 @@ Authority order: owner instruction, `Design_Doc.md`, `PRD.md`, `Roadmap.md`, the
 | Documentation set | **Complete, updated for multi-city** | Eight markdown files; decisions D-013 to D-018 |
 | Phase 1 foundation and data | **Complete** | P1.1-P1.9 done; 15 tests pass; dataset remains unverified |
 | Phase 2 expert system | **Complete** | R1-R6 implemented; expert coverage included in 22 passing tests |
-| Phase 3 search (A*, Greedy) | Not started | Logic is prototype-verified in `Design_Doc.md` Section 8.6 |
+| Phase 3 search (A*, Greedy) | **Complete** | A* matched brute force on 30 seeded cases; 36 real city/age runs all under 1 second |
 | Phase 4 pipeline (multi-city) and CLI | Not started | |
 | Phase 4B interests UI (bubble pool, local web page) | Not started | Build after Phase 4; `server.py`, `web/` |
 | Phase 5 evaluation and report | Not started | |
@@ -76,7 +76,7 @@ Implemented files are listed in the current repo map in `AGENT_BOARD.md`. The ro
 ## Commands
 
 ```bash
-.venv/bin/pytest -q                      # currently 22 (Phases 1 and 2 complete)
+.venv/bin/pytest -q                      # currently 88 (Phases 1 to 3 complete)
 python -m travelplanner.cli --route tokyo:3,kyoto:2,osaka:2 --age adult
 python -m travelplanner.cli --city tokyo --days 3 --age adult
 python -m travelplanner.server          # Phase 4B, http://127.0.0.1:8000
@@ -89,7 +89,7 @@ Test plan (targets, not results): models/config, knowledge, expert, A* (brute-fo
 
 ## Current handoff
 
-Next task is **Phase 3, search (M2 and M3)**: add the tests-only brute-force oracle and seeded instances, then implement Greedy and A* with the goal re-queue requirement. Phase 2 exposes `default_rules` and `apply_rules(places, age_group, interests, cfg)` in `travelplanner.expert`; Phase 1 exposes dataset/category loaders and transfer helpers in `travelplanner.knowledge`.
+Next task is **Phase 4, the multi-city planner and CLI**. Phase 3 exposes `plan_day` and `h_bound` in `travelplanner.astar`, plus `plan_day_greedy` in `travelplanner.greedy`. The A* terminal goal re-queue at `f = g` is required for optimality and covered by a regression case (legacy first-terminal behavior returned 48 where the optimum is 66).
 
 Items needing the owner (do not guess): OI-1 instructor approval of the project, and OI-3 verification of the dataset's hours, coordinates, and durations (scores are editorial estimates). OI-5 (exact versus grouped interest categories) is open with a default. OI-2 and OI-4 are closed.
 

@@ -39,11 +39,11 @@ Done when: each age group gives the expected hours and filtered candidates on th
 
 Goal: A* and Greedy for one day, proven against a brute-force oracle.
 
-- [ ] P3.1 Test helper: brute-force `brute_force_day` in `tests/` and a seeded random instance generator
-- [ ] P3.2 `greedy.py`: `plan_day_greedy`
-- [ ] P3.3 `astar.py`: `h_bound` and `plan_day` (including the goal re-queue at f = g)
-- [ ] P3.4 Tests: A* equals brute force on 30 seeded instances; windows and waiting; late `day_start`; budget never exceeded; goal re-queue regression; Greedy at most A*
-- [ ] P3.5 Measure states and time at 10, 15, 20 candidates and on every city of the real dataset; compare with `Design_Doc.md` Section 13
+- [x] P3.1 Test helper: brute-force `brute_force_day` in `tests/` and a seeded random instance generator
+- [x] P3.2 `greedy.py`: `plan_day_greedy`
+- [x] P3.3 `astar.py`: `h_bound` and `plan_day` (including the goal re-queue at f = g)
+- [x] P3.4 Tests: A* equals brute force on 30 seeded instances; windows and waiting; late `day_start`; budget never exceeded; goal re-queue regression; Greedy at most A*
+- [x] P3.5 Measure states and time at 10, 15, 20 candidates and on every city of the real dataset; compare with `Design_Doc.md` Section 13
 
 Done when: A* matches the oracle on every seeded instance and every day on the real dataset finishes under 1 second.
 
