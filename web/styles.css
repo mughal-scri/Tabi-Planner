@@ -96,7 +96,8 @@ body {
 }
 
 button { font: inherit; }
-button:focus-visible, a:focus-visible {
+h1:focus, h2:focus, h3:focus, h4:focus { outline: none; }
+button:focus-visible, a:focus-visible, h2:focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 3px;
 }
@@ -344,7 +345,16 @@ h1 {
 .bubble-small { padding: var(--space-2) var(--space-3); font-size: var(--type-small); }
 .bubble-medium { padding: var(--space-3) var(--space-4); font-size: var(--type-body); }
 .bubble-large { padding: var(--space-4) var(--space-5); font-size: var(--type-subhead); font-weight: 750; }
-.bubble-check { font-weight: 900; }
+.bubble-check {
+  display: inline-block;
+  width: 1.1ch;
+  text-align: center;
+  font-weight: 900;
+  visibility: hidden;
+}
+.interest-bubble[aria-pressed="true"] .bubble-check {
+  visibility: visible;
+}
 
 .action-group { flex-wrap: wrap; justify-content: flex-end; }
 .error-message { margin: var(--space-4) 0 0; padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); background: var(--error-bg); color: var(--error-ink); font-weight: 650; }
@@ -360,12 +370,29 @@ h1 {
 .trip-summary { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); color: var(--muted); font-size: var(--type-small); }
 .summary-chip { padding: var(--space-1) var(--space-3); border-radius: var(--radius-pill); background: var(--surface-soft); color: var(--ink); font-weight: 650; }
 .itinerary-days { display: grid; gap: var(--space-4); }
+.city-group { display: grid; gap: var(--space-3); }
+.city-group-heading { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) var(--space-1); border-bottom: 2px solid var(--line-soft); }
+.city-group-heading h3 { margin: 0; font-size: var(--type-subhead); font-weight: 800; color: var(--ink); letter-spacing: -0.02em; }
+.city-group-meta { color: var(--muted); font-size: var(--type-small); font-weight: 650; }
+.city-days { display: grid; gap: var(--space-4); }
 .day-card { overflow: hidden; border: 1px solid var(--line-soft); border-radius: var(--radius-md); background: var(--surface); }
 .day-card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); padding: var(--space-4); background: var(--surface-soft); }
-.day-card-heading h3 { margin: 0; font-size: var(--type-subhead); }
+.day-card-heading h3, .day-card-heading h4 { margin: 0; font-size: var(--type-subhead); }
 .day-card-heading p { margin: var(--space-1) 0 0; color: var(--muted); font-size: var(--type-small); }
 .day-value { flex: 0 0 auto; color: var(--brand); font-weight: 850; }
-.transfer-row { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--line-soft); background: var(--notice-bg); color: var(--notice-ink); font-size: var(--type-small); font-weight: 700; }
+.transfer-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-block: var(--space-1) var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  background: var(--notice-bg);
+  color: var(--notice-ink);
+  font-size: var(--type-small);
+  font-weight: 700;
+}
 .stop-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
 .stop-row { display: grid; grid-template-columns: 4.2rem minmax(0, 1fr); gap: var(--space-3); padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--line-soft); }
 .stop-row:last-child { border-bottom: 0; }

@@ -55,7 +55,7 @@ tests/test_astar.py
 tests/test_greedy.py
 tests/test_planner.py
 tests/test_cli.py
-tests/test_server.py        (planned)
+tests/test_server.py
 web/index.html, web/styles.css, web/app.js   three-step interest-bubble itinerary UI, plain HTML/CSS/JS
 results/                       output directory
 README.md, CHANGELOG.md, requirements.txt, pytest.ini, .gitignore
@@ -141,6 +141,12 @@ python -m travelplanner.experiments                                 # Phase 5
 - **Late-start days:** R4 uses the nominal day start, so a late arrival day just finds fewer feasible places in the search; do not add a second filter for it.
 
 ## 9. Activity log (newest first)
+
+### 2026-11-14 | Antigravity | Phase 4B UI review, accessibility, CLS fixes, and city grouping
+- Did: reviewed Phase 4B against PRD, Design_Doc Section 16, and Roadmap. Identified and fixed: (1) keyboard focus loss on city selection and route reorder/stepper changes by updating attributes in place and restoring focus; (2) layout shift (CLS 15.8px) on interest bubbles by using fixed-width checkmark with visibility toggle; (3) grouped day cards by city under `.city-group` with `.city-group-heading` and placed transfer rows between cities per Section 16.3; (4) step transition focus management onto step headings (`tabindex="-1"`) with reduced-motion check; (5) trip validation message capitalization; (6) synchronized Roadmap checkboxes for P3, P4, P4B and retired `(planned)` tag on `tests/test_server.py`.
+- Files: `web/index.html`, `web/styles.css`, `web/app.js`, `DOCS/Roadmap.md`, `DOCS/AGENT_BOARD.md`.
+- Verified: `python3 -m pytest -q` -> 125 passed; `node --check web/app.js` passed; headless Chrome CDP tests verified focus preservation on city toggle, stepper change, move up/down, 0px bubble shift, and city-grouped itinerary layout.
+- Next: Phase 5 evaluation and report material.
 
 ### 2026-11-14 | Codex | Completed Phase 4B local web UI
 - Did: added JSON-safe plan serialization, a loopback-only API with a 64 KB body limit and fixed static whitelist, and the accessible three-step city/day/age and interest-bubble UI.
