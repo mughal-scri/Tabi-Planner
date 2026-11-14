@@ -1,6 +1,6 @@
 # Tabi-Planner
 
-A command-line AI travel planner for one Japanese city. It uses an expert system to adapt daily limits to the traveller and A* search to build a value-focused itinerary. It is designed to work offline.
+A Japan travel planner for one city or an ordered multi-city route. An expert system adjusts daily limits and place values for the traveller; A* is designed to build high-value daily itineraries within opening hours and travel time. A Greedy baseline supports comparison. The project works offline and uses an owner-supplied, unverified dataset.
 
 ## Setup
 
@@ -14,12 +14,12 @@ python -m pip install -r requirements.txt
 
 ## Current progress
 
-The project is being built in roadmap order. The initial package foundation and Tokyo seed data are in place. One owner-selected high-effort seed place is still needed to reach the planned 14 to 18 entries. Place scores, durations, coordinates, and hours remain placeholders; `data/tokyo.json` is marked unverified.
+Phase 1 is complete: the multi-city data models, configuration, dataset loader, geographic helpers, and validation tests are in place. The dataset contains 12 cities and 135 places. Its scores are estimates, its hours are planning windows, and its coordinates are approximate; it remains unverified.
 
 ## Tests
 
 ```bash
-.venv/bin/pytest -q
+pytest -q
 ```
 
 ## Planned CLI
@@ -27,5 +27,6 @@ The project is being built in roadmap order. The initial package foundation and 
 Once the planner and CLI phases are complete:
 
 ```bash
+python -m travelplanner.cli --route tokyo:3,kyoto:2 --age adult
 python -m travelplanner.cli --city tokyo --days 3 --age adult
 ```

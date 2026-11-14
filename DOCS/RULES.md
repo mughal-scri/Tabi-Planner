@@ -18,17 +18,19 @@ Authority when documents disagree: owner instruction, then `Design_Doc.md`, then
 - Do not add features, options, modules, files, or dependencies on your own. If something seems missing, write it as an open issue on the board and ask the owner.
 - Build in Roadmap order. Do not start a phase before the previous one passes its tests.
 - This project is the Japan Travel Planner only. Do not touch files outside this repo.
+- The web UI (`web/`, `server.py`) is in scope and is built only in Roadmap Phase 4B, after the CLI pipeline works. It must stay plain HTML, CSS, and JavaScript. Interests are chosen with toggle bubbles, never a drop-down.
+- Trips are multi-city with a user-supplied route. Do not add automatic city selection or ordering, transport-mode choice, or any other item in `Future_Enhancements.md` without an explicit owner instruction.
 
 ## 3. Code rules
 
 - Python 3.10+. Standard library only for the package (see `Tech_Stack_DOC.md`). Matplotlib only in `experiments.py`.
-- Follow `Design_Doc.md` Section 3 conventions exactly: minutes since midnight, `(lat, lon)`, haversine in km, travel factor applies to travel only, value computed once by the expert system.
+- Follow `Design_Doc.md` Section 3 conventions exactly: minutes since midnight, `(lat, lon)`, haversine in km, travel factor applies to travel only, value computed once by the expert system, the city-to-city transfer shifts the start of a city's first day, and place `id` (not name) is the key across the trip.
 - Keep every tunable in `Config`. No magic numbers elsewhere.
 - No global random state. Core code uses no randomness. Experiments take a seeded `random.Random`.
 - Small functions, type hints on public functions, plain names. Prefer clear code over clever code.
 - Do not use network calls, and do not write files outside `results/` and the user's explicit output paths.
 - Heap entries always include an integer tie-breaker. A* must keep the goal re-queue at f = g (`Design_Doc.md` Section 8.3).
-- Apply the `senior-developer-skill` guidance to all code work (clean code, careful debugging, small reviewable steps). The `autonomous-ui-architect` skill applies only if the owner approves a UI; the CLI build does not need it.
+- Apply the `senior-developer-skill` guidance to all code work (clean code, careful debugging, small reviewable steps). The `autonomous-ui-architect` skill applies to the `web/` work, within the stack in `Tech_Stack_DOC.md` (no React, Tailwind, shadcn/ui, or TypeScript; where the skill conflicts with the stack document, the stack document wins).
 
 ## 4. Testing rules
 
@@ -38,12 +40,15 @@ Authority when documents disagree: owner instruction, then `Design_Doc.md`, then
 - Tests are deterministic: fixed seeds, no network, no dependence on the current date or clock.
 - Never weaken or delete a test to make it pass. If a test is wrong, say why on the board and fix it deliberately.
 - Every full plan in tests must satisfy the invariants in `Design_Doc.md` Section 11.
+- Server tests use an ephemeral localhost port and the standard library only. The web page is checked with the manual checklist in `Design_Doc.md` Section 16.4; log each checklist result on the board and do not claim it passed unless you ran it.
+- Web code never puts API data into `innerHTML`; use `textContent` or element creation.
 
 ## 5. Data honesty
 
-- Place data is hand-written. Never present guessed coordinates, scores, durations, or opening hours as verified facts.
-- Keep `"verified": false` in a data file until the owner confirms it against official sources.
-- Do not invent places or facts to fill a file. Ask the owner or leave the entry out.
+- The dataset `data/japan_travel_dataset.json` is owner-supplied (generated with ChatGPT). Its scores are editorial estimates, its opening hours are broad planning windows, and its coordinates are approximate pins. Never present them as verified facts.
+- Keep `"verified": false` in the dataset (root and each city) until the owner confirms it against official sources.
+- Do not edit, add, or remove places, scores, hours, or coordinates in the dataset on your own. Only the owner changes its content; you may only set `verified` flags when the owner tells you to.
+- Do not invent places or facts. Ask the owner or leave the entry out. Do not bring back the obsolete `data/tokyo.json` seed file.
 - Report only numbers you actually measured. Do not quote the prototype reference numbers in `Design_Doc.md` Section 13 as results of this project.
 
 ## 6. Honesty and reporting
