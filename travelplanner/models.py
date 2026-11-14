@@ -30,6 +30,7 @@ class City:
     start_name: str
     places: tuple[Place, ...]
     verified: bool
+    region: str = ""
 
 
 @dataclass(frozen=True)
@@ -80,5 +81,5 @@ class Plan:
     verified_data: bool = False
     city_names: dict[str, str] = field(default_factory=dict)
     city_start_names: dict[str, str] = field(default_factory=dict)
-    interest_labels: dict[str, str] = field(default_factory=dict)
+    category_labels: dict[str, str] = field(default_factory=dict)
     souvenir_boost_threshold: int = 3

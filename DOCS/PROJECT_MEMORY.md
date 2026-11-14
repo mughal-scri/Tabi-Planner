@@ -2,7 +2,7 @@
 
 **Purpose:** the compact, current handoff for a new agent. Read this after `RULES.md` and `AGENT_BOARD.md`; do **not** scan the repository to learn project state. This is a memory aid, not a replacement for `Design_Doc.md`.
 
-**Snapshot:** 2026-11-14. Phases 1 to 4 are complete for the multi-city planner. Data, expert rules, A*/Greedy search, the trip pipeline, formatter, CLI, and tests are implemented. Full suite: 116 passed with `python3 -m pytest -q`.
+**Snapshot:** 2026-11-14. Phases 1 to 4B are complete for the multi-city planner. Data, expert rules, A*/Greedy search, planner, CLI, localhost API, bubble-based UI, and tests are implemented. Full suite: 125 passed with `python3 -m pytest -q`.
 
 ---
 
@@ -26,7 +26,7 @@ Authority order: owner instruction, `Design_Doc.md`, `PRD.md`, `Roadmap.md`, the
 | Phase 2 expert system | **Complete** | R1-R6 implemented; expert coverage included in 22 passing tests |
 | Phase 3 search (A*, Greedy) | **Complete** | A* matched brute force on 30 seeded cases; 36 real city/age runs all under 1 second |
 | Phase 4 pipeline (multi-city) and CLI | **Complete** | Multi-city transfers, validations, formatter, CLI; tests cover 1/3/5-day plans and all age groups |
-| Phase 4B interests UI (bubble pool, local web page) | Not started | Build after Phase 4; `server.py`, `web/` |
+| Phase 4B interests UI (bubble pool, local web page) | **Complete** | API and page tests pass; all seven browser checklist items logged in `AGENT_BOARD.md` |
 | Phase 5 evaluation and report | Not started | |
 | Phase 6 optional extras | Not started | Only after Phase 5 |
 
@@ -42,13 +42,13 @@ Implemented files are listed in the current repo map in `AGENT_BOARD.md`. The ro
 |---|---|
 | `travelplanner/models.py` | `Place` (adds `id`, `area`, `location_scope`), `City`, `Profile` (`age_group`, `route`), `Transfer`, `Stop`, `DayPlan` (adds `city_id`, `start_min`, `transfer`), `Plan` |
 | `travelplanner/config.py` | `Config()` (all tunables, including `intercity_speed_kmh`, `intercity_buffer_min`, `max_cities`, `max_days_per_city`, `max_total_days`, `max_candidates_per_day` = 20) |
-| `travelplanner/knowledge.py` | `to_minutes`, `to_clock`, `haversine_km`, `travel_min`, `load_dataset(path)`, `load_city(path, city_id)`, `intercity(a, b, cfg)`, `load_categories(path)`, `category_pool(cities, labels, city_ids)` |
+| `travelplanner/knowledge.py` | `to_minutes`, `to_clock`, `haversine_km`, `travel_min`, `load_dataset_bundle(path)`, `load_dataset(path)`, `load_city(path, city_id)`, `intercity(a, b, cfg)`, `load_categories(path)`, `category_pool(cities, labels, city_ids)` |
 | `travelplanner/expert.py` | `Rule`, `default_rules`, `apply_rules(places, age_group, interests, cfg)` (returns candidates, day window, travel factor, `removed`, `fired`; runs once per city) |
 | `travelplanner/astar.py` | `h_bound`, `plan_day(candidates, start, day_start_min, day_end_min, speed_kmh, factor)` returns `(stops, value, expanded)` |
 | `travelplanner/greedy.py` | `plan_day_greedy` with the same signature as `plan_day` |
-| `travelplanner/planner.py` | `plan_trip(dataset_path, profile, cfg, algorithm)` (multi-city), `format_plan(plan)` |
+| `travelplanner/planner.py` | `plan_trip(dataset_path, profile, cfg, algorithm[, dataset_bundle])` (multi-city), `format_plan(plan)`, `plan_to_dict(plan)` |
 | `travelplanner/cli.py` | `python -m travelplanner.cli --route tokyo:3,kyoto:2 --age adult [--interests shrine,market] [--algorithm astar\|greedy] [--data PATH]`, or `--city tokyo --days 3` for one city |
-| `travelplanner/server.py` | Local API on 127.0.0.1: `GET /api/cities`, `GET /api/categories?cities=`, `POST /api/plan`, plus the three static files in `web/`; `plan_to_dict(plan)` in `planner.py` |
+| `travelplanner/server.py` | Local API on 127.0.0.1: `GET /api/cities`, `GET /api/categories?cities=`, `POST /api/plan`, plus the three static files in `web/`; cached dataset loaded once at startup |
 | `web/index.html`, `web/styles.css`, `web/app.js` | Three-step page: trip, interest bubble pool, itinerary; plain HTML, CSS, and JavaScript; no drop-downs |
 | `travelplanner/experiments.py` | E1 (A* vs Greedy), E2 (rules on and off), E3 (interest boost 0 versus 8) |
 
@@ -76,11 +76,11 @@ Implemented files are listed in the current repo map in `AGENT_BOARD.md`. The ro
 ## Commands
 
 ```bash
-.venv/bin/pytest -q                      # currently 116 (Phases 1 to 4 complete)
+.venv/bin/pytest -q                      # currently 125 (Phases 1 to 4B complete)
 python -m travelplanner.cli --route tokyo:3,kyoto:2,osaka:2 --age adult
 python -m travelplanner.cli --city tokyo --days 3 --age adult
-python -m travelplanner.server          # Phase 4B, http://127.0.0.1:8000
-python -m travelplanner.experiments
+python -m travelplanner.server          # http://127.0.0.1:8000
+python -m travelplanner.experiments     # Phase 5
 ```
 
 Test plan (targets, not results): models/config, knowledge, expert, A* (brute-force oracle), Greedy, planner invariants, CLI. See `Design_Doc.md` Section 11.
@@ -89,7 +89,7 @@ Test plan (targets, not results): models/config, knowledge, expert, A* (brute-fo
 
 ## Current handoff
 
-Next task is **Phase 4B, the local web UI and JSON API**. The CLI is runnable with an ordered `--route` or a single `--city/--days`; both paths call `plan_trip`. One deliberate model addition is `DayPlan.approximate`, plus display metadata on `Plan` for custom dataset formatting. An empty transfer-only day may start and end after the nominal day end if the transfer itself runs late; it has no stops.
+Next task is **Phase 5, evaluation and report material**. The web server loads a validated city/category bundle once at startup and shares it with `plan_trip`, avoiding a dataset read for every request. It listens only on 127.0.0.1, serves a fixed file whitelist, and rejects request bodies over 64 KB. All seven browser checklist items are logged; item 3's AX name/state and live-region semantics were checked, but spoken screen-reader output was not manually verified.
 
 Items needing the owner (do not guess): OI-1 instructor approval of the project, and OI-3 verification of the dataset's hours, coordinates, and durations (scores are editorial estimates). OI-5 (exact versus grouped interest categories) is open with a default. OI-2 and OI-4 are closed.
 

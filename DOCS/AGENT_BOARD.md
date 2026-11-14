@@ -24,11 +24,11 @@ The shared whiteboard. Every agent reads this before starting and updates it bef
 | 2 | `expert.py` (M1) | DONE | 22 passed | 2026-11-14 | R1-R6, ordered execution, candidate values, removal/fired explanations |
 | 3 | `greedy.py` and `astar.py` (M3, M2) | DONE | 88 passed | 2026-11-14 | Oracle verified on 30 seeded cases; all 36 real city/age runs under 1 sec |
 | 4 | `planner.py` and `cli.py` | DONE | 116 passed | 2026-11-14 | Multi-city pipeline, formatted output, route/interest validation, CLI |
-| 4B | Interests and local web UI (`server.py`, `web/`) | NOT STARTED | 0 | n/a | Build after Phase 4; bubble pool, three-step flow |
+| 4B | Interests and local web UI (`server.py`, `web/`) | DONE | 125 passed | 2026-11-14 | API and browser flow complete; checklist logged, spoken screen-reader output not manually verified |
 | 5 | `experiments.py`, report material | NOT STARTED | 0 | n/a | E1, E2, E3 |
 | 6 | Optional extras | NOT STARTED | 0 | n/a | Only after Phase 5 |
 
-Full-suite test count: **116 passed** (`python3 -m pytest -q`). `.venv/bin/pytest` is unavailable in this workspace.
+Full-suite test count: **125 passed** (`python3 -m pytest -q`). `.venv/bin/pytest` is unavailable in this workspace.
 
 ## 3. Repo map
 
@@ -45,7 +45,7 @@ travelplanner/astar.py         M2 A* day search and fractional-knapsack upper bo
 travelplanner/greedy.py        M3 greedy value-per-minute baseline
 travelplanner/planner.py       Multi-city `plan_trip` and `format_plan`
 travelplanner/cli.py           `--route` and `--city/--days` command-line entry point
-travelplanner/server.py        (planned) local web server and JSON API, stdlib only
+travelplanner/server.py        localhost JSON API and fixed-whitelist static server, stdlib only
 travelplanner/experiments.py   (planned)
 data/japan_travel_dataset.json owner-supplied master dataset, 12 cities, 135 places, verified=false
 tests/test_models_config.py
@@ -56,7 +56,7 @@ tests/test_greedy.py
 tests/test_planner.py
 tests/test_cli.py
 tests/test_server.py        (planned)
-web/index.html, web/styles.css, web/app.js   (planned) single-page UI, plain HTML/CSS/JS
+web/index.html, web/styles.css, web/app.js   three-step interest-bubble itinerary UI, plain HTML/CSS/JS
 results/                       output directory
 README.md, CHANGELOG.md, requirements.txt, pytest.ini, .gitignore
 ```
@@ -120,6 +120,7 @@ python -m travelplanner.experiments                                 # Phase 5
 | D-021 | The `autonomous-ui-architect` skill is applied to `web/` within this stack: tokens, states, accessibility, validation loop yes; React, Tailwind, shadcn/ui, TypeScript no. `Tech_Stack_DOC.md` wins on conflicts | 2026-11-13 |
 | D-022 | The bubble pool shows only categories that have at least one place in the chosen cities; bubble size follows the place count (tiers 1, 2 to 3, 4 or more) | 2026-11-13 |
 | D-023 | `DayPlan.approximate` records use of the candidate cap; `Plan` retains city and selected-interest labels so `format_plan` works with custom dataset paths. An empty transfer day keeps its late `start_min`/`end_min`, even when arrival is after the nominal day end | 2026-11-14 |
+| D-024 | The web server caches a `load_dataset_bundle` result at startup and passes it to trip planning, so requests do not reread the dataset. `City.region` supplies the city-picker API's region field | 2026-11-14 |
 
 ## 8. Gotchas
 
@@ -140,6 +141,13 @@ python -m travelplanner.experiments                                 # Phase 5
 - **Late-start days:** R4 uses the nominal day start, so a late arrival day just finds fewer feasible places in the search; do not add a second filter for it.
 
 ## 9. Activity log (newest first)
+
+### 2026-11-14 | Codex | Completed Phase 4B local web UI
+- Did: added JSON-safe plan serialization, a loopback-only API with a 64 KB body limit and fixed static whitelist, and the accessible three-step city/day/age and interest-bubble UI.
+- Files: `travelplanner/server.py`, `planner.py`, `knowledge.py`, `models.py`, `tests/test_server.py`, `web/`, Roadmap and handoff docs.
+- Verified: `python3 -m pytest -q` -> 125 passed; `node --check web/app.js` and `git diff --check` passed. Headless Chrome checklist: 1 server/page/no console or external requests PASS; 2 Tab/Space/Enter/focus PASS; 3 Chrome accessibility tree names/pressed state and polite status region checked (actual spoken output not manually verified); 4 360/768/1280 px no horizontal overflow PASS; 5 light/dark contrast and reduced motion PASS; 6 two-city interest route matched CLI stop times/names PASS; 7 no-city, 10-day limit, and stopped-server errors PASS.
+- Notes: measured token contrast minimums were 4.64:1 in light mode and 4.56:1 in dark mode for the checked control-border pair; text pairs exceeded 4.5:1. Browser test used Chrome 157.
+- Next: Phase 5 evaluation and report material.
 
 ### 2026-11-14 | Codex | Completed Phase 4 planner and CLI
 - Did: added route validation and multi-city/day orchestration, one expert-rule pass per city, transfers, sequential place removal, candidate-cap annotations, itinerary formatting, and the CLI.

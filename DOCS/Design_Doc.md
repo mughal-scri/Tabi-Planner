@@ -120,6 +120,7 @@ class City:
     start_name: str        # "Tokyo Station"
     places: tuple          # tuple[Place, ...]
     verified: bool
+    region: str = ""       # used by the city picker API
 
 @dataclass(frozen=True)
 class Profile:
@@ -255,6 +256,7 @@ def to_clock(minutes: float) -> str                      # "09:35", rounded to n
 def haversine_km(a: tuple, b: tuple) -> float
 def travel_min(a: tuple, b: tuple, speed_kmh: float, factor: float = 1.0) -> float
 def load_dataset(path: str) -> dict[str, City]           # city_id -> City, in file order; validates (Section 4.1)
+def load_dataset_bundle(path: str) -> tuple[dict[str, City], dict[str, str]] # cities and category labels from one read
 def load_city(path: str, city_id: str) -> City           # convenience; ValueError if the city is unknown
 def intercity(a: City, b: City, cfg: Config) -> Transfer # km from anchors, minutes with buffer
 def load_categories(path: str) -> dict[str, str]         # category id -> label, from the root `categories` (58 entries)
@@ -405,7 +407,7 @@ def plan_day_greedy(candidates, start, day_start_min, day_end_min, speed_kmh, fa
 ## 10. Trip planner (multi-city) and CLI (`planner.py`, `cli.py`)
 
 ```python
-def plan_trip(dataset_path: str, profile: Profile, cfg: Config = Config(), algorithm: str = "astar") -> Plan
+def plan_trip(dataset_path: str, profile: Profile, cfg: Config = Config(), algorithm: str = "astar", dataset_bundle=None) -> Plan
 def format_plan(plan: Plan) -> str
 ```
 
@@ -622,7 +624,7 @@ Request bodies are limited to 64 KB. `plan_to_dict` returns a JSON-safe dictiona
 
 ```
 { "profile": {...}, "algorithm", "total_value", "verified_data",
-  "days": [ {"day", "city_id", "city_name",
+  "days": [ {"day", "city_id", "city_name", "approximate",
              "transfer": {"from", "to", "km", "minutes"} or null,
              "start", "end", "value",
              "stops": [ {"id", "name", "area", "category", "category_label",
