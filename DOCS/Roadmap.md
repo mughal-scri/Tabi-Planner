@@ -28,10 +28,10 @@ Done when: `load_dataset("data/japan_travel_dataset.json")` returns 12 cities an
 
 Goal: age group to limits and filtered, valued candidates, with explanations.
 
-- [ ] P2.1 `Rule` structure and `default_rules`
-- [ ] P2.2 R1 (day length), R2 (senior filter), R3 (travel factor), R5 (souvenir boost), R6 (interest boost), R4 (fit check)
-- [ ] P2.3 `apply_rules(places, age_group, interests, cfg)` returning candidates, window, factor, `removed`, `fired`
-- [ ] P2.4 Tests for each rule (R6 with and without interests), rule order, and explanation fields
+- [x] P2.1 `Rule` structure and `default_rules`
+- [x] P2.2 R1 (day length), R2 (senior filter), R3 (travel factor), R5 (souvenir boost), R6 (interest boost), R4 (fit check)
+- [x] P2.3 `apply_rules(places, age_group, interests, cfg)` returning candidates, window, factor, `removed`, `fired`
+- [x] P2.4 Tests for each rule (R6 with and without interests), rule order, and explanation fields
 
 Done when: each age group gives the expected hours and filtered candidates on the Tokyo data from the master dataset.
 

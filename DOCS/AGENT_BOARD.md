@@ -2,7 +2,7 @@
 
 The shared whiteboard. Every agent reads this before starting and updates it before stopping (protocol: `RULES.md` Section 8). Newest log entries go at the top of the Activity Log.
 
-**Last updated:** 2026-11-14 by Codex (Phase 1 multi-city migration)
+**Last updated:** 2026-11-14 by Codex (Phase 2 expert system)
 
 ---
 
@@ -21,14 +21,14 @@ The shared whiteboard. Every agent reads this before starting and updates it bef
 |---|---|---|---|---|---|
 | Docs | Eight-document set | UPDATED | n/a | 2026-11-13 | Rewritten for multi-city trips and the master dataset (decisions D-013 to D-017) |
 | 1 | Foundation and data (multi-city) | DONE | 15 passed | 2026-11-14 | P1.1 to P1.9 complete; master dataset preserved, loader validates its schema |
-| 2 | `expert.py` (M1) | NOT STARTED | 0 | n/a | Rules R1 to R6 |
+| 2 | `expert.py` (M1) | DONE | 22 passed | 2026-11-14 | R1-R6, ordered execution, candidate values, removal/fired explanations |
 | 3 | `greedy.py` and `astar.py` (M3, M2) | NOT STARTED | 0 | n/a | Prototype-verified A* logic is in `Design_Doc.md` Section 8.6 |
 | 4 | `planner.py` and `cli.py` | NOT STARTED | 0 | n/a | |
 | 4B | Interests and local web UI (`server.py`, `web/`) | NOT STARTED | 0 | n/a | Build after Phase 4; bubble pool, three-step flow |
 | 5 | `experiments.py`, report material | NOT STARTED | 0 | n/a | E1, E2, E3 |
 | 6 | Optional extras | NOT STARTED | 0 | n/a | Only after Phase 5 |
 
-Full-suite test count: **15 passed** (`python3 -m pytest -q`). `.venv/bin/pytest` is unavailable in this workspace.
+Full-suite test count: **22 passed** (`python3 -m pytest -q`). `.venv/bin/pytest` is unavailable in this workspace.
 
 ## 3. Repo map
 
@@ -40,7 +40,7 @@ travelplanner/__init__.py      version 0.1.0
 travelplanner/config.py        Config dataclass (multi-city limits and transfer/interests tunables)
 travelplanner/models.py        Place, City, Profile, Transfer, Stop, DayPlan, Plan
 travelplanner/knowledge.py     M0 helpers; dataset/city/category loaders and transfer calculations
-travelplanner/expert.py        (planned)
+travelplanner/expert.py        M1 ordered expert rules and per-city `apply_rules`
 travelplanner/astar.py         (planned)
 travelplanner/greedy.py        (planned)
 travelplanner/planner.py       (planned)
@@ -133,6 +133,13 @@ python -m travelplanner.experiments                                 # Phase 5
 - **Late-start days:** R4 uses the nominal day start, so a late arrival day just finds fewer feasible places in the search; do not add a second filter for it.
 
 ## 9. Activity log (newest first)
+
+### 2026-11-14 | Codex | Completed Phase 2 expert system
+- Did: implemented ordered R1-R6 rules, base and boosted candidate values, senior and fit removals, and `fired`/`removed` explanations; added rule coverage tests.
+- Files: `travelplanner/expert.py`, `tests/test_expert.py`, Roadmap and status docs.
+- Verified: `python3 -m pytest -q` -> 22 passed. `.venv/bin/pytest` remains unavailable (no project venv).
+- Notes: rules are applied once per call (the planner will call once per city); R4 checks the nominal day window as specified.
+- Next: Phase 3, Greedy and A* search.
 
 ### 2026-11-14 | Codex | Completed Phase 1 multi-city migration
 - Did: migrated models/config and M0 to the owner-supplied master dataset; added schema validation, category pools, and intercity transfers; replaced single-city tests.
