@@ -2,7 +2,7 @@
 
 The shared whiteboard. Every agent reads this before starting and updates it before stopping (protocol: `RULES.md` Section 8). Newest log entries go at the top of the Activity Log.
 
-**Last updated:** 2026-11-14 by Codex (Phase 3 search)
+**Last updated:** 2026-11-14 by Codex (Phase 4 planner and CLI)
 
 ---
 
@@ -23,12 +23,12 @@ The shared whiteboard. Every agent reads this before starting and updates it bef
 | 1 | Foundation and data (multi-city) | DONE | 15 passed | 2026-11-14 | P1.1 to P1.9 complete; master dataset preserved, loader validates its schema |
 | 2 | `expert.py` (M1) | DONE | 22 passed | 2026-11-14 | R1-R6, ordered execution, candidate values, removal/fired explanations |
 | 3 | `greedy.py` and `astar.py` (M3, M2) | DONE | 88 passed | 2026-11-14 | Oracle verified on 30 seeded cases; all 36 real city/age runs under 1 sec |
-| 4 | `planner.py` and `cli.py` | NOT STARTED | 0 | n/a | |
+| 4 | `planner.py` and `cli.py` | DONE | 116 passed | 2026-11-14 | Multi-city pipeline, formatted output, route/interest validation, CLI |
 | 4B | Interests and local web UI (`server.py`, `web/`) | NOT STARTED | 0 | n/a | Build after Phase 4; bubble pool, three-step flow |
 | 5 | `experiments.py`, report material | NOT STARTED | 0 | n/a | E1, E2, E3 |
 | 6 | Optional extras | NOT STARTED | 0 | n/a | Only after Phase 5 |
 
-Full-suite test count: **88 passed** (`python3 -m pytest -q`). `.venv/bin/pytest` is unavailable in this workspace.
+Full-suite test count: **116 passed** (`python3 -m pytest -q`). `.venv/bin/pytest` is unavailable in this workspace.
 
 ## 3. Repo map
 
@@ -43,13 +43,18 @@ travelplanner/knowledge.py     M0 helpers; dataset/city/category loaders and tra
 travelplanner/expert.py        M1 ordered expert rules and per-city `apply_rules`
 travelplanner/astar.py         M2 A* day search and fractional-knapsack upper bound
 travelplanner/greedy.py        M3 greedy value-per-minute baseline
-travelplanner/planner.py       (planned)
-travelplanner/cli.py           (planned)
+travelplanner/planner.py       Multi-city `plan_trip` and `format_plan`
+travelplanner/cli.py           `--route` and `--city/--days` command-line entry point
 travelplanner/server.py        (planned) local web server and JSON API, stdlib only
 travelplanner/experiments.py   (planned)
 data/japan_travel_dataset.json owner-supplied master dataset, 12 cities, 135 places, verified=false
 tests/test_models_config.py
 tests/test_knowledge.py
+tests/test_expert.py
+tests/test_astar.py
+tests/test_greedy.py
+tests/test_planner.py
+tests/test_cli.py
 tests/test_server.py        (planned)
 web/index.html, web/styles.css, web/app.js   (planned) single-page UI, plain HTML/CSS/JS
 results/                       output directory
@@ -114,6 +119,7 @@ python -m travelplanner.experiments                                 # Phase 5
 | D-020 | A local web UI is in scope: one page, plain HTML, CSS, and JavaScript in `web/`, served by a standard-library `http.server` on 127.0.0.1 with a small JSON API. Three steps (trip, interests, itinerary). Interests are toggle bubbles in a pool, never a drop-down. Built in Phase 4B after the CLI works | 2026-11-13 |
 | D-021 | The `autonomous-ui-architect` skill is applied to `web/` within this stack: tokens, states, accessibility, validation loop yes; React, Tailwind, shadcn/ui, TypeScript no. `Tech_Stack_DOC.md` wins on conflicts | 2026-11-13 |
 | D-022 | The bubble pool shows only categories that have at least one place in the chosen cities; bubble size follows the place count (tiers 1, 2 to 3, 4 or more) | 2026-11-13 |
+| D-023 | `DayPlan.approximate` records use of the candidate cap; `Plan` retains city and selected-interest labels so `format_plan` works with custom dataset paths. An empty transfer day keeps its late `start_min`/`end_min`, even when arrival is after the nominal day end | 2026-11-14 |
 
 ## 8. Gotchas
 
@@ -126,6 +132,7 @@ python -m travelplanner.experiments                                 # Phase 5
 - **Prototype numbers are not results:** the figures in `Design_Doc.md` Section 13 came from random synthetic data. Do not quote them as this project's results.
 - **Thin later days:** cities have 8 to 18 places, so a third or later day in one city may have few or no stops. This is expected; empty days are listed.
 - **Transfer shift:** the first day in a new city starts at `day_start_min + transfer minutes`; the day end is unchanged. The senior travel factor does not apply to the transfer.
+- **Transfer-only empty day:** if the transfer arrival is after the nominal day end, the empty `DayPlan` retains the arrival time for both `start_min` and `end_min`; it has no visit that exceeds the day's window.
 - **Dataset schema:** the root has a `cities` array, so a loader that expects a single city object will fail. Souvenir scores in the file are 1 to 5, attraction 7 to 10. Many extra fields exist; ignore them (`Design_Doc.md` Section 4.1).
 - **Interest pool:** build it from the chosen cities only (for example 25 of the 58 categories for Tokyo, Kyoto, and Osaka). Unknown interest ids are a `ValueError`. The category label comes from the root `categories` list.
 - **Web UI:** no `<select>` anywhere; never put API data in `innerHTML`; the server binds to 127.0.0.1 only and serves a fixed file whitelist; the API returns `HH:MM` strings.
@@ -133,6 +140,13 @@ python -m travelplanner.experiments                                 # Phase 5
 - **Late-start days:** R4 uses the nominal day start, so a late arrival day just finds fewer feasible places in the search; do not add a second filter for it.
 
 ## 9. Activity log (newest first)
+
+### 2026-11-14 | Codex | Completed Phase 4 planner and CLI
+- Did: added route validation and multi-city/day orchestration, one expert-rule pass per city, transfers, sequential place removal, candidate-cap annotations, itinerary formatting, and the CLI.
+- Files: `travelplanner/planner.py`, `travelplanner/cli.py`, model presentation fields, tests, Roadmap and handoff docs.
+- Verified: `python3 -m pytest -q` -> 116 passed; CLI sample route and single-city Greedy commands ran successfully; `git diff --check` passed.
+- Notes: retained city/anchor/category display labels in `Plan` so formatting is independent of the dataset's path. Empty transfer-only days can have `end_min` after nominal day end when transfer arrival is late; no stops are scheduled on those days.
+- Next: Phase 4B local web UI and JSON API.
 
 ### 2026-11-14 | Codex | Completed Phase 3 search
 - Did: implemented Greedy and maximization-form A*, with the required terminal goal re-queue; added the tests-only brute-force oracle, seeded generator, and search regression/constraint coverage.

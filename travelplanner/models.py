@@ -66,6 +66,7 @@ class DayPlan:
     end_min: float
     expanded: int
     transfer: Transfer | None = None
+    approximate: bool = False
 
 
 @dataclass
@@ -77,3 +78,7 @@ class Plan:
     removed: dict[str, dict[str, str]] = field(default_factory=dict)
     algorithm: str = "astar"
     verified_data: bool = False
+    city_names: dict[str, str] = field(default_factory=dict)
+    city_start_names: dict[str, str] = field(default_factory=dict)
+    interest_labels: dict[str, str] = field(default_factory=dict)
+    souvenir_boost_threshold: int = 3

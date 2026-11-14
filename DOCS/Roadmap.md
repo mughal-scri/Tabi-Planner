@@ -51,10 +51,10 @@ Done when: A* matches the oracle on every seeded instance and every day on the r
 
 Goal: multi-city, multi-day planning, formatted output, command-line entry point.
 
-- [ ] P4.1 `planner.py`: `plan_trip` (route and interest validation, rules once per city with the interests, transfer on each city's first day, day loop, remove used places, empty days still listed, unused and removed per city, candidate cap)
-- [ ] P4.2 `format_plan` with the sample layout: per-day city heading, transfer lines, `[day trip]` and `[matches interest]` marks, interests line, unverified-data note, not-scheduled reasons
-- [ ] P4.3 `cli.py`: `--route` and `--city/--days` (mutually exclusive), `--age`, `--interests`, `--algorithm`, `--data`; exit code 2 on bad input
-- [ ] P4.4 Tests: invariants on full single- and multi-city plans (1, 3, 5 days, all age groups); route and interest validation errors; interests raise matching stops; single-city equivalence; CLI tests
+- [x] P4.1 `planner.py`: `plan_trip` (route and interest validation, rules once per city with the interests, transfer on each city's first day, day loop, remove used places, empty days still listed, unused and removed per city, candidate cap)
+- [x] P4.2 `format_plan` with the sample layout: per-day city heading, transfer lines, `[day trip]` and `[matches interest]` marks, interests line, unverified-data note, not-scheduled reasons
+- [x] P4.3 `cli.py`: `--route` and `--city/--days` (mutually exclusive), `--age`, `--interests`, `--algorithm`, `--data`; exit code 2 on bad input
+- [x] P4.4 Tests: invariants on full single- and multi-city plans (1, 3, 5 days, all age groups); route and interest validation errors; interests raise matching stops; single-city equivalence; CLI tests
 
 Done when: `python -m travelplanner.cli --route tokyo:3,kyoto:2,osaka:2 --age adult` prints a valid itinerary with transfers, and `--city tokyo --days 3 --age adult` still works.
 

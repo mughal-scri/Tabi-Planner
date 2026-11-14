@@ -152,6 +152,7 @@ class DayPlan:
     end_min: float         # last stop end, or start_min if no stops
     expanded: int          # search states expanded (0 for greedy)
     transfer: object       # Transfer on the first day in a new city, otherwise None
+    approximate: bool      # True when the per-day candidate guard was applied
 
 @dataclass
 class Plan:
@@ -162,6 +163,10 @@ class Plan:
     removed: dict          # city_id -> {place name: rule id} from the expert system
     algorithm: str         # "astar" | "greedy"
     verified_data: bool    # True only if every route city is verified
+    city_names: dict       # city_id -> display name, retained for formatting
+    city_start_names: dict # city_id -> anchor name, retained for formatting
+    interest_labels: dict  # selected category id -> display label
+    souvenir_boost_threshold: int # formatting threshold for the [souvenirs] tag
 ```
 
 ### 4.1 Master dataset schema (`data/japan_travel_dataset.json`)
