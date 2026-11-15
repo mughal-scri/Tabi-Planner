@@ -14,7 +14,7 @@ python -m pip install -r requirements.txt
 
 ## Current progress
 
-Phase 1 is complete: the multi-city data models, configuration, dataset loader, geographic helpers, and validation tests are in place. The dataset contains 12 cities and 135 places. Its scores are estimates, its hours are planning windows, and its coordinates are approximate; it remains unverified.
+Phases 1 and 2 are complete: multi-city data models, configuration, dataset helpers, and the traveller-specific expert rules are in place. The dataset contains 12 cities and 135 places. Its scores are estimates, its hours are planning windows, and its coordinates are approximate; it remains unverified. Search (A* and Greedy) is next.
 
 ## Tests
 
