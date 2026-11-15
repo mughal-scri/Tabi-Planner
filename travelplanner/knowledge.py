@@ -10,6 +10,7 @@ from .models import City, Place, Transfer
 
 EARTH_RADIUS_KM = 6371.0
 EFFORT_LEVELS = {"low", "medium", "high"}
+DatasetBundle = tuple[dict[str, City], dict[str, str]]
 
 
 def to_minutes(hhmm: str) -> int:
@@ -148,7 +149,10 @@ def _parse_dataset(data: Any) -> tuple[dict[str, City], dict[str, str]]:
             places.append(Place(pid, pname, plat, plon, attraction, souvenir, duration,
                                 open_min, close_min, item["effort"], category, item["area"],
                                 item["location_scope"], tuple(item["tags"])))
-        cities[city_id] = City(city_id, name, (lat, lon), start_name, tuple(places), verified)
+        region = raw_city.get("region", "")
+        if not isinstance(region, str):
+            raise ValueError(f"Field 'region' must be a string in {context}")
+        cities[city_id] = City(city_id, name, (lat, lon), start_name, tuple(places), verified, region)
     return cities, labels
 
 
@@ -160,9 +164,13 @@ def _read_json(path: str | Path) -> Any:
         raise ValueError(f"Could not load dataset from {path}: {exc}") from exc
 
 
+def load_dataset_bundle(path: str | Path) -> DatasetBundle:
+    """Load and validate city data and category labels in one dataset read."""
+    return _parse_dataset(_read_json(path))
+
+
 def load_dataset(path: str | Path) -> dict[str, City]:
-    cities, _ = _parse_dataset(_read_json(path))
-    return cities
+    return load_dataset_bundle(path)[0]
 
 
 def load_city(path: str | Path, city_id: str) -> City:
@@ -180,8 +188,7 @@ def intercity(a: City, b: City, cfg: Config) -> Transfer:
 
 
 def load_categories(path: str | Path) -> dict[str, str]:
-    _, labels = _parse_dataset(_read_json(path))
-    return labels
+    return load_dataset_bundle(path)[1]
 
 
 def category_pool(

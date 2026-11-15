@@ -6,7 +6,7 @@ from .astar import plan_day
 from .config import Config
 from .expert import apply_rules
 from .greedy import plan_day_greedy
-from .knowledge import intercity, load_categories, load_dataset, to_clock
+from .knowledge import DatasetBundle, intercity, load_dataset_bundle, to_clock
 from .models import DayPlan, Plan, Profile
 
 
@@ -18,6 +18,7 @@ def plan_trip(
     profile: Profile,
     cfg: Config = Config(),
     algorithm: str = "astar",
+    dataset_bundle: DatasetBundle | None = None,
 ) -> Plan:
     """Plan the requested ordered route one city and one day at a time."""
     if profile.age_group not in cfg.day_hours or profile.age_group not in cfg.travel_factor:
@@ -48,8 +49,7 @@ def plan_trip(
     if any(not isinstance(interest, str) for interest in profile.interests):
         raise ValueError("Interests must be category id strings")
 
-    cities = load_dataset(dataset_path)
-    labels = load_categories(dataset_path)
+    cities, labels = dataset_bundle or load_dataset_bundle(dataset_path)
     for city_id, _ in profile.route:
         if city_id not in cities:
             raise ValueError(f"Unknown city {city_id!r}")
@@ -129,7 +129,7 @@ def plan_trip(
         verified_data=all(cities[city_id].verified for city_id, _ in profile.route),
         city_names={city_id: cities[city_id].name for city_id, _ in profile.route},
         city_start_names={city_id: cities[city_id].start_name for city_id, _ in profile.route},
-        interest_labels={interest: labels[interest] for interest in profile.interests},
+        category_labels=labels,
         souvenir_boost_threshold=cfg.souvenir_boost_threshold,
     )
 
@@ -156,7 +156,7 @@ def format_plan(plan: Plan) -> str:
     ]
     if plan.profile.interests:
         interests = ", ".join(
-            plan.interest_labels.get(interest, interest) for interest in plan.profile.interests
+            plan.category_labels.get(interest, interest) for interest in plan.profile.interests
         )
         lines.append(f"Interests: {interests}")
     if not plan.verified_data:
@@ -209,3 +209,63 @@ def format_plan(plan: Plan) -> str:
     if not_scheduled:
         lines.append("Not scheduled: " + "; ".join(not_scheduled))
     return "\n".join(lines)
+
+
+def plan_to_dict(plan: Plan) -> dict:
+    """Convert a plan to the JSON-safe response shape used by the local API."""
+    days = []
+    for day in plan.days:
+        city_name = plan.city_names.get(day.city_id, day.city_id)
+        transfer = None
+        if day.transfer:
+            transfer = {
+                "from": plan.city_names.get(day.transfer.from_city, day.transfer.from_city),
+                "to": plan.city_names.get(day.transfer.to_city, day.transfer.to_city),
+                "km": day.transfer.km,
+                "minutes": day.transfer.minutes,
+            }
+        stops = []
+        for stop in day.stops:
+            place = stop.place
+            stops.append({
+                "id": place.id,
+                "name": place.name,
+                "area": place.area,
+                "category": place.category,
+                "category_label": plan.category_labels.get(place.category, place.category),
+                "arrive": to_clock(stop.arrive_min),
+                "start": to_clock(stop.start_min),
+                "end": to_clock(stop.end_min),
+                "travel_min": stop.travel_min,
+                "duration_min": place.duration_min,
+                "souvenir": place.souvenir,
+                "matches_interest": place.category in plan.profile.interests,
+                "day_trip": place.location_scope == "nearby_day_trip",
+            })
+        days.append({
+            "day": day.day,
+            "city_id": day.city_id,
+            "city_name": city_name,
+            "transfer": transfer,
+            "start": to_clock(day.start_min),
+            "end": to_clock(day.end_min),
+            "value": day.value,
+            "approximate": day.approximate,
+            "stops": stops,
+        })
+    return {
+        "profile": {
+            "age_group": plan.profile.age_group,
+            "route": [
+                {"city_id": city_id, "days": days_in_city}
+                for city_id, days_in_city in plan.profile.route
+            ],
+            "interests": list(plan.profile.interests),
+        },
+        "algorithm": plan.algorithm,
+        "total_value": plan.total_value,
+        "verified_data": plan.verified_data,
+        "days": days,
+        "unused": plan.unused,
+        "removed": plan.removed,
+    }

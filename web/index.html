@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f4ed">
+  <title>Tabi Planner — Japan itineraries</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="Tabi Planner home">
+      <span class="brand-mark" aria-hidden="true">旅</span>
+      <span>Tabi <span class="brand-light">Planner</span></span>
+    </a>
+    <p class="header-note">A thoughtful route through Japan</p>
+  </header>
+
+  <main class="page-shell">
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">Make room for the places you love</p>
+      <h1 id="page-title">A trip that feels like yours.</h1>
+      <p class="intro-copy">Choose your cities and pace. We’ll shape each day around time, distance, and the things that interest you.</p>
+    </section>
+
+    <nav class="step-track" aria-label="Itinerary steps">
+      <ol>
+        <li class="step-indicator is-current" data-step-indicator="1"><span>01</span><span>Your trip</span></li>
+        <li class="step-indicator" data-step-indicator="2"><span>02</span><span>Your interests</span></li>
+        <li class="step-indicator" data-step-indicator="3"><span>03</span><span>Your itinerary</span></li>
+      </ol>
+    </nav>
+
+    <div id="live-message" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <section id="step-trip" class="step-panel" aria-labelledby="trip-title">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Step 1 · Your trip</p>
+          <h2 id="trip-title">Where would you like to go?</h2>
+        </div>
+        <span class="step-count">Up to 5 cities · 10 days</span>
+      </div>
+
+      <div class="section-block">
+        <h3>Pick your cities in visiting order</h3>
+        <p class="helper-text">Tap a city to add it. Tap again to remove it.</p>
+        <div id="city-list" class="city-list" aria-label="Available cities">
+          <p class="loading-line">Loading cities…</p>
+        </div>
+        <p id="trip-limit-message" class="inline-message" aria-live="polite"></p>
+      </div>
+
+      <div class="section-block route-block">
+        <div class="section-heading-row">
+          <h3>Your route</h3>
+          <span id="route-day-count" class="count-pill">0 of 10 days</span>
+        </div>
+        <p class="helper-text">Choose 1–5 days in each city, up to 10 days for the whole trip.</p>
+        <ol id="route-list" class="route-list" aria-label="Your ordered route"></ol>
+        <p id="route-empty" class="empty-hint">Your chosen cities will appear here.</p>
+      </div>
+
+      <fieldset class="section-block age-fieldset">
+        <legend>Who’s travelling?</legend>
+        <p class="helper-text">Daily pace adjusts to your age group.</p>
+        <div id="age-options" class="choice-row">
+          <button class="choice-chip" type="button" data-age="youth" aria-pressed="false">Youth</button>
+          <button class="choice-chip" type="button" data-age="adult" aria-pressed="false">Adult</button>
+          <button class="choice-chip" type="button" data-age="senior" aria-pressed="false">Senior</button>
+        </div>
+      </fieldset>
+
+      <div class="step-actions">
+        <span id="trip-validation" class="validation-note" aria-live="polite">Choose at least one city and an age group to continue.</span>
+        <button id="trip-continue" class="button button-primary" type="button" disabled>
+          Choose interests <span aria-hidden="true">→</span>
+        </button>
+      </div>
+    </section>
+
+    <section id="step-interests" class="step-panel" aria-labelledby="interests-title" hidden>
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Step 2 · What do you enjoy?</p>
+          <h2 id="interests-title">Pick a few things you love.</h2>
+        </div>
+        <span id="interest-count" class="step-count">0 selected</span>
+      </div>
+      <p class="helper-text interest-intro">Your choices give matching places a gentle boost. They’re a guide, not a filter.</p>
+      <div id="bubble-pool" class="bubble-pool" aria-label="Interest categories">
+        <p class="loading-line">Finding interests along your route…</p>
+      </div>
+      <p id="interest-error" class="error-message" role="alert" hidden></p>
+      <div class="step-actions split-actions">
+        <button id="interests-back" class="button button-quiet" type="button">← Back</button>
+        <div class="action-group">
+          <button id="interests-clear" class="button button-quiet" type="button">Clear</button>
+          <button id="interests-skip" class="button button-secondary" type="button">Skip</button>
+          <button id="interests-continue" class="button button-primary" type="button">Build my trip <span aria-hidden="true">→</span></button>
+        </div>
+      </div>
+    </section>
+
+    <section id="step-itinerary" class="step-panel" aria-labelledby="itinerary-title" hidden>
+      <div class="panel-heading itinerary-heading">
+        <div>
+          <p class="eyebrow">Step 3 · Your itinerary</p>
+          <h2 id="itinerary-title">Your days, thoughtfully arranged.</h2>
+        </div>
+        <button id="plan-again" class="button button-quiet" type="button">Plan again</button>
+      </div>
+      <div id="plan-loading" class="loading-card" role="status" hidden>
+        <span class="loading-orbit" aria-hidden="true"></span>
+        <div class="loading-copy"><strong>Finding your rhythm…</strong><p>Arranging places around your route and daily pace.</p>
+          <span class="loading-skeleton" aria-hidden="true"><i></i><i></i><i></i></span>
+        </div>
+      </div>
+      <p id="plan-error" class="error-message" role="alert" hidden></p>
+      <div id="unverified-banner" class="notice-banner" hidden></div>
+      <div id="trip-summary" class="trip-summary" hidden></div>
+      <div id="itinerary-days" class="itinerary-days" aria-live="polite"></div>
+      <div id="plan-total" class="plan-total" hidden></div>
+      <div class="step-actions split-actions itinerary-actions">
+        <button id="itinerary-back" class="button button-quiet" type="button">← Back to interests</button>
+        <button id="plan-again-bottom" class="button button-primary" type="button">Plan another trip</button>
+      </div>
+    </section>
+
+    <footer class="page-footer">
+      <span>Made for curious travellers.</span>
+      <span>Place information is planning guidance; check details before you go.</span>
+    </footer>
+  </main>
+</body>
+</html>
