@@ -1,0 +1,20 @@
+{
+  "city": "Tokyo",
+  "verified": false,
+  "start": {"name": "Tokyo Station", "lat": 35.6812, "lon": 139.7671},
+  "places": [
+    {"name": "Senso-ji", "lat": 35.7148, "lon": 139.7967, "attraction": 9, "souvenir": 2, "duration_min": 90, "open": "06:00", "close": "17:00", "effort": "low", "tags": ["temple"]},
+    {"name": "Nakamise-dori", "lat": 35.7118, "lon": 139.7963, "attraction": 7, "souvenir": 5, "duration_min": 60, "open": "09:00", "close": "18:00", "effort": "low", "tags": ["shopping", "souvenir"]},
+    {"name": "Meiji Shrine", "lat": 35.6764, "lon": 139.6993, "attraction": 9, "souvenir": 1, "duration_min": 90, "open": "05:00", "close": "17:00", "effort": "medium", "tags": ["shrine"]},
+    {"name": "Takeshita Street (Harajuku)", "lat": 35.6716, "lon": 139.7050, "attraction": 7, "souvenir": 4, "duration_min": 60, "open": "10:00", "close": "20:00", "effort": "low", "tags": ["shopping"]},
+    {"name": "Shibuya Crossing", "lat": 35.6595, "lon": 139.7005, "attraction": 8, "souvenir": 1, "duration_min": 30, "open": "00:00", "close": "23:59", "effort": "low", "tags": ["landmark"]},
+    {"name": "Akihabara", "lat": 35.6984, "lon": 139.7731, "attraction": 7, "souvenir": 5, "duration_min": 120, "open": "10:00", "close": "20:00", "effort": "low", "tags": ["shopping"]},
+    {"name": "Ueno Park", "lat": 35.7156, "lon": 139.7745, "attraction": 8, "souvenir": 2, "duration_min": 120, "open": "05:00", "close": "23:00", "effort": "medium", "tags": ["park"]},
+    {"name": "Tsukiji Outer Market", "lat": 35.6655, "lon": 139.7707, "attraction": 7, "souvenir": 3, "duration_min": 90, "open": "08:00", "close": "14:00", "effort": "low", "tags": ["market"]},
+    {"name": "Imperial Palace East Gardens", "lat": 35.6852, "lon": 139.7528, "attraction": 8, "souvenir": 1, "duration_min": 90, "open": "09:00", "close": "16:30", "effort": "medium", "tags": ["garden"]},
+    {"name": "Shinjuku Gyoen", "lat": 35.6852, "lon": 139.7100, "attraction": 8, "souvenir": 1, "duration_min": 120, "open": "09:00", "close": "16:30", "effort": "medium", "tags": ["garden"]},
+    {"name": "Tokyo Tower", "lat": 35.6586, "lon": 139.7454, "attraction": 8, "souvenir": 3, "duration_min": 90, "open": "09:00", "close": "22:30", "effort": "low", "tags": ["viewpoint"]},
+    {"name": "Tokyo Skytree", "lat": 35.7101, "lon": 139.8107, "attraction": 9, "souvenir": 3, "duration_min": 120, "open": "10:00", "close": "21:00", "effort": "low", "tags": ["viewpoint"]},
+    {"name": "Odaiba waterfront", "lat": 35.6267, "lon": 139.7760, "attraction": 7, "souvenir": 1, "duration_min": 60, "open": "17:00", "close": "23:00", "effort": "low", "tags": ["night-view"]}
+  ]
+}
