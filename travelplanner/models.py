@@ -1,10 +1,11 @@
-"""Shared data models for the travel planner."""
+"""Shared immutable input models and mutable plan result models."""
 
 from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
 class Place:
+    id: str
     name: str
     lat: float
     lon: float
@@ -14,14 +15,36 @@ class Place:
     open_min: int
     close_min: int
     effort: str
+    category: str
+    area: str = ""
+    location_scope: str = "city"
     tags: tuple[str, ...] = ()
     value: float = 0.0
 
 
 @dataclass(frozen=True)
+class City:
+    city_id: str
+    name: str
+    start: tuple[float, float]
+    start_name: str
+    places: tuple[Place, ...]
+    verified: bool
+
+
+@dataclass(frozen=True)
 class Profile:
     age_group: str
-    days: int
+    route: tuple[tuple[str, int], ...]
+    interests: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class Transfer:
+    from_city: str
+    to_city: str
+    km: float
+    minutes: float
 
 
 @dataclass(frozen=True)
@@ -36,18 +59,21 @@ class Stop:
 @dataclass
 class DayPlan:
     day: int
+    city_id: str
     stops: list[Stop]
     value: float
+    start_min: float
     end_min: float
     expanded: int
+    transfer: Transfer | None = None
 
 
 @dataclass
 class Plan:
-    city: str
     profile: Profile
     days: list[DayPlan]
     total_value: float
-    unused: list[str] = field(default_factory=list)
+    unused: dict[str, list[str]] = field(default_factory=dict)
+    removed: dict[str, dict[str, str]] = field(default_factory=dict)
     algorithm: str = "astar"
     verified_data: bool = False
