@@ -33,11 +33,16 @@ function cityFor(id) {
 function updateTripValidation() {
   const total = totalDays();
   const errors = [];
-  if (!state.route.length) errors.push("Choose at least one city");
+  if (!state.route.length) errors.push("choose at least one city");
   if (!state.ageGroup) errors.push("choose an age group");
   if (state.route.length > LIMITS.cities) errors.push(`use no more than ${LIMITS.cities} cities`);
   if (total > LIMITS.totalDays) errors.push(`use no more than ${LIMITS.totalDays} days in total`);
-  byId("trip-validation").textContent = errors.length ? `${errors.join(" and ")} to continue.` : "Your trip is ready.";
+  if (errors.length) {
+    const combined = errors.join(" and ");
+    byId("trip-validation").textContent = `${combined.charAt(0).toUpperCase()}${combined.slice(1)} to continue.`;
+  } else {
+    byId("trip-validation").textContent = "Your trip is ready.";
+  }
   byId("trip-continue").disabled = errors.length > 0;
   byId("route-day-count").textContent = `${total} of ${LIMITS.totalDays} days`;
   byId("route-empty").hidden = state.route.length > 0;
@@ -45,25 +50,54 @@ function updateTripValidation() {
 
 function renderCities() {
   const list = byId("city-list");
-  list.replaceChildren();
-  for (const city of state.cities) {
-    const selected = state.route.some((entry) => entry.city_id === city.id);
-    const button = make("button", "city-chip", `${city.name} · ${city.places} places`);
-    button.type = "button";
+  if (!list.children.length || list.querySelector(".loading-line")) {
+    list.replaceChildren();
+    for (const city of state.cities) {
+      const selected = state.route.some((entry) => entry.city_id === city.id);
+      const button = make("button", "city-chip", `${city.name} · ${city.places} places`);
+      button.type = "button";
+      button.dataset.cityId = city.id;
+      button.setAttribute("aria-pressed", String(selected));
+      button.setAttribute("aria-label", `${selected ? "Remove" : "Add"} ${city.name}, ${city.region}, ${city.places} places`);
+      button.addEventListener("click", () => toggleCity(city.id));
+      list.append(button);
+    }
+    return;
+  }
+  for (const button of list.querySelectorAll(".city-chip")) {
+    const cityId = button.dataset.cityId;
+    const city = cityFor(cityId);
+    if (!city) continue;
+    const selected = state.route.some((entry) => entry.city_id === cityId);
     button.setAttribute("aria-pressed", String(selected));
     button.setAttribute("aria-label", `${selected ? "Remove" : "Add"} ${city.name}, ${city.region}, ${city.places} places`);
-    button.addEventListener("click", () => toggleCity(city.id));
-    list.append(button);
   }
 }
 
 function renderRoute() {
+  const active = document.activeElement;
+  let focusTarget = null;
+  if (active && active.closest("#route-list")) {
+    const row = active.closest(".route-row");
+    const cityId = row ? row.dataset.cityId : null;
+    let action = null;
+    if (active.classList.contains("route-move")) {
+      action = active.dataset.action;
+    } else if (active.classList.contains("stepper-button")) {
+      action = active.dataset.action;
+    }
+    if (cityId && action) {
+      focusTarget = { cityId, action };
+    }
+  }
+
   const list = byId("route-list");
   list.replaceChildren();
   state.route.forEach((entry, index) => {
     const city = cityFor(entry.city_id);
     if (!city) return;
     const row = make("li", "route-row");
+    row.dataset.cityId = city.id;
     row.append(make("span", "route-number", String(index + 1).padStart(2, "0")));
 
     const name = make("span", "route-name", city.name);
@@ -73,11 +107,13 @@ function renderRoute() {
     const controls = make("span", "route-controls");
     const moveUp = make("button", "route-move", "↑");
     moveUp.type = "button";
+    moveUp.dataset.action = "up";
     moveUp.disabled = index === 0;
     moveUp.setAttribute("aria-label", `Move ${city.name} earlier`);
     moveUp.addEventListener("click", () => moveCity(index, -1));
     const moveDown = make("button", "route-move", "↓");
     moveDown.type = "button";
+    moveDown.dataset.action = "down";
     moveDown.disabled = index === state.route.length - 1;
     moveDown.setAttribute("aria-label", `Move ${city.name} later`);
     moveDown.addEventListener("click", () => moveCity(index, 1));
@@ -87,6 +123,7 @@ function renderRoute() {
     const dayControls = make("span", "route-days");
     const minus = make("button", "stepper-button", "−");
     minus.type = "button";
+    minus.dataset.action = "minus";
     minus.disabled = entry.days <= 1;
     minus.setAttribute("aria-label", `Remove a day from ${city.name}`);
     minus.addEventListener("click", () => changeDays(index, -1));
@@ -94,6 +131,7 @@ function renderRoute() {
     count.setAttribute("aria-label", `${entry.days} days`);
     const plus = make("button", "stepper-button", "+");
     plus.type = "button";
+    plus.dataset.action = "plus";
     plus.disabled = entry.days >= LIMITS.daysPerCity || totalDays() >= LIMITS.totalDays;
     plus.setAttribute("aria-label", `Add a day to ${city.name}`);
     plus.addEventListener("click", () => changeDays(index, 1));
@@ -102,6 +140,24 @@ function renderRoute() {
     list.append(row);
   });
   updateTripValidation();
+
+  if (focusTarget) {
+    const targetRow = list.querySelector(`[data-city-id="${focusTarget.cityId}"]`);
+    if (targetRow) {
+      const btn = targetRow.querySelector(`[data-action="${focusTarget.action}"]`);
+      if (btn && !btn.disabled) {
+        btn.focus();
+      } else if (btn && btn.disabled) {
+        const altAction =
+          focusTarget.action === "plus" ? "minus" :
+          focusTarget.action === "minus" ? "plus" :
+          focusTarget.action === "up" ? "down" : "up";
+        const altBtn = altAction ? targetRow.querySelector(`[data-action="${altAction}"]`) : null;
+        if (altBtn && !altBtn.disabled) altBtn.focus();
+        else targetRow.focus();
+      }
+    }
+  }
 }
 
 function toggleCity(cityId) {
@@ -159,7 +215,14 @@ function showStep(number) {
     else indicator.removeAttribute("aria-current");
   }
   announce(`Step ${number} of 3.`);
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  const prefersReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.scrollTo({ top: 0, behavior: prefersReduced ? "auto" : "smooth" });
+
+  const headingId = number === 1 ? "trip-title" : number === 2 ? "interests-title" : "itinerary-title";
+  const heading = byId(headingId);
+  if (heading) {
+    heading.focus();
+  }
 }
 
 async function loadCities() {
@@ -192,22 +255,21 @@ function renderBubbles() {
     button.setAttribute("aria-label", `${category.label}, ${category.count} places`);
     const label = make("span", "", category.label);
     const count = make("span", "bubble-count", String(category.count));
-    const check = make("span", "bubble-check", selected ? "✓" : "");
+    const check = make("span", "bubble-check", "✓");
     check.setAttribute("aria-hidden", "true");
     button.append(label, count, check);
-    button.addEventListener("click", () => toggleInterest(category.id, button, check));
+    button.addEventListener("click", () => toggleInterest(category.id, button));
     pool.append(button);
   }
   updateInterestCount();
 }
 
-function toggleInterest(id, button, check) {
+function toggleInterest(id, button) {
   const category = state.categories.find((item) => item.id === id);
   if (state.interests.has(id)) state.interests.delete(id);
   else state.interests.add(id);
   const selected = state.interests.has(id);
   button.setAttribute("aria-pressed", String(selected));
-  check.textContent = selected ? "✓" : "";
   updateInterestCount();
   announce(`${category.label} ${selected ? "selected" : "removed"}.`);
 }
@@ -264,7 +326,33 @@ function renderPlan(plan) {
     : "Place details are unverified planning estimates. Check current opening hours and locations before travelling.";
   byId("unverified-banner").hidden = false;
 
+  let currentCityId = null;
+  let currentGroup = null;
+  let currentDaysContainer = null;
+
   for (const day of plan.days) {
+    if (day.city_id !== currentCityId) {
+      currentCityId = day.city_id;
+
+      if (day.transfer) {
+        daysElement.append(make("div", "transfer-row",
+          `Transfer · ${day.transfer.from} to ${day.transfer.to} · ${Math.round(day.transfer.km)} km · about ${formatDuration(day.transfer.minutes)}`));
+      }
+
+      currentGroup = make("section", "city-group");
+      currentGroup.setAttribute("aria-label", `${day.city_name} itinerary`);
+
+      const cityDaysCount = plan.days.filter((d) => d.city_id === day.city_id).length;
+      const groupHeading = make("div", "city-group-heading");
+      groupHeading.append(make("h3", "", day.city_name));
+      groupHeading.append(make("span", "city-group-meta", `${cityDaysCount} ${cityDaysCount === 1 ? "day" : "days"}`));
+      currentGroup.append(groupHeading);
+
+      currentDaysContainer = make("div", "city-days");
+      currentGroup.append(currentDaysContainer);
+      daysElement.append(currentGroup);
+    }
+
     const card = make("article", "day-card");
     const heading = make("div", "day-card-heading");
     const headingText = make("div");
@@ -273,10 +361,6 @@ function renderPlan(plan) {
     heading.append(headingText, make("span", "day-value", `Value ${day.value}`));
     card.append(heading);
 
-    if (day.transfer) {
-      card.append(make("div", "transfer-row",
-        `Transfer · ${day.transfer.from} to ${day.transfer.to} · ${Math.round(day.transfer.km)} km · about ${formatDuration(day.transfer.minutes)}`));
-    }
     if (day.approximate) {
       card.append(make("p", "approximate-note", "This day is approximate because the candidate limit was reached."));
     }
@@ -301,7 +385,7 @@ function renderPlan(plan) {
       }
       card.append(stops);
     }
-    daysElement.append(card);
+    currentDaysContainer.append(card);
   }
 
   const placeCount = plan.days.reduce((count, day) => count + day.stops.length, 0);
@@ -346,7 +430,10 @@ async function buildPlan() {
     state.plan = result;
     renderPlan(result);
   } catch (error) {
-    byId("plan-error").textContent = `${error.message} Check that the local planner is running, then try again.`;
+    const isNetwork = error instanceof TypeError || error.message.includes("fetch");
+    byId("plan-error").textContent = isNetwork
+      ? `${error.message}. Check that the local planner is running, then try again.`
+      : error.message;
     byId("plan-error").hidden = false;
     announce(error.message);
   } finally {
