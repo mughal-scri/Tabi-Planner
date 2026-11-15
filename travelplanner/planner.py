@@ -13,14 +13,19 @@ from .models import DayPlan, Plan, Profile
 DEFAULT_DATA = Path(__file__).resolve().parent.parent / "data" / "japan_travel_dataset.json"
 
 
+def _matches_interest(place, interests) -> bool:
+    return place.category in interests or bool(set(place.tags).intersection(interests))
+
+
 def plan_trip(
     dataset_path: str | Path,
     profile: Profile,
-    cfg: Config = Config(),
+    cfg: Config | None = None,
     algorithm: str = "astar",
     dataset_bundle: DatasetBundle | None = None,
 ) -> Plan:
     """Plan the requested ordered route one city and one day at a time."""
+    cfg = cfg or Config()
     if profile.age_group not in cfg.day_hours or profile.age_group not in cfg.travel_factor:
         raise ValueError(f"Unknown age group {profile.age_group!r}")
     if algorithm not in {"astar", "greedy"}:
@@ -177,15 +182,18 @@ def format_plan(plan: Plan) -> str:
             to_name = city_names.get(day.transfer.to_city, day.transfer.to_city)
             lines.append(f"  Transfer: {from_name} -> {to_name}, {day.transfer.km:.0f} km, "
                          f"about {_duration_text(day.transfer.minutes)}")
-        start_name = plan.city_start_names.get(day.city_id, f"{city_name} Station")
-        lines.append(f"  {to_clock(day.start_min)}  Start: {start_name}")
+        if day.transfer and not day.stops:
+            lines.append("  No places fit after the inter-city transfer.")
+        else:
+            start_name = plan.city_start_names.get(day.city_id, f"{city_name} Station")
+            lines.append(f"  {to_clock(day.start_min)}  Start: {start_name}")
         for stop in day.stops:
             place = stop.place
             location = f", {place.area}" if place.area else ""
             marks = []
             if place.location_scope == "nearby_day_trip":
                 marks.append("day trip")
-            if place.category in plan.profile.interests:
+            if _matches_interest(place, plan.profile.interests):
                 marks.append("matches interest")
             if place.souvenir >= plan.souvenir_boost_threshold:
                 marks.append("souvenirs")
@@ -239,7 +247,7 @@ def plan_to_dict(plan: Plan) -> dict:
                 "travel_min": stop.travel_min,
                 "duration_min": place.duration_min,
                 "souvenir": place.souvenir,
-                "matches_interest": place.category in plan.profile.interests,
+                "matches_interest": _matches_interest(place, plan.profile.interests),
                 "day_trip": place.location_scope == "nearby_day_trip",
             })
         days.append({

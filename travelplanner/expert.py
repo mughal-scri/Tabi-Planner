@@ -1,4 +1,4 @@
-"""Forward-chaining expert rules for traveller-specific planning limits."""
+"""Ordered expert-rule pass for traveller-specific planning limits."""
 
 from dataclasses import dataclass, replace
 from typing import Callable
@@ -15,7 +15,10 @@ class Rule:
 
 
 def default_rules(cfg: Config) -> list[Rule]:
-    """Return the ordered M1 rules; each rule reports whether it changed facts."""
+    """Return the ordered M1 rule pipeline; each rule reports whether it changed facts."""
+
+    def matches_interest(place: Place, interests: frozenset[str]) -> bool:
+        return place.category in interests or bool(set(place.tags).intersection(interests))
 
     def set_day_window(facts: dict) -> bool:
         end = cfg.day_start_min + 60 * cfg.day_hours[facts["age_group"]]
@@ -53,7 +56,7 @@ def default_rules(cfg: Config) -> list[Rule]:
     def interest_bonus(facts: dict) -> bool:
         changed = False
         for index, place in enumerate(facts["candidates"]):
-            if place.category in facts["interests"]:
+            if matches_interest(place, facts["interests"]):
                 facts["candidates"][index] = replace(
                     place, value=place.value + cfg.interest_boost
                 )
@@ -76,7 +79,7 @@ def default_rules(cfg: Config) -> list[Rule]:
         p.souvenir >= cfg.souvenir_boost_threshold for p in facts["candidates"]
     )
     has_interest = lambda facts: any(
-        p.category in facts["interests"] for p in facts["candidates"]
+        matches_interest(p, facts["interests"]) for p in facts["candidates"]
     )
     has_nonfitting = lambda facts: any(
         min(p.close_min, facts["day_end_min"])
@@ -101,7 +104,7 @@ def apply_rules(
     interests: tuple[str, ...] | list[str],
     cfg: Config,
 ) -> dict:
-    """Apply M1 once to one city's places and return candidates plus explanations."""
+    """Run M1's rules once in order for one city's places and return explanations."""
     if age_group not in cfg.day_hours or age_group not in cfg.travel_factor:
         raise ValueError(f"Unknown age_group {age_group!r}")
     if any(not isinstance(interest, str) for interest in interests):

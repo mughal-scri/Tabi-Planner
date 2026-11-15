@@ -7,19 +7,19 @@ from .knowledge import travel_min
 from .models import Place, Stop
 
 
-def h_bound(now: float, day_end: float, unvisited: list[Place] | tuple[Place, ...]) -> float:
-    """Return a fractional-knapsack upper bound on value still collectable."""
+def _h_bound(now: float, day_end: float, ordered: tuple[Place, ...], mask: int | None = None) -> float:
+    """Fractional knapsack bound over places in descending value/time order."""
     remaining = day_end - now
     if remaining <= 0:
         return 0.0
-    items = sorted(
-        ((place.value / place.duration_min, place.value, place.duration_min)
-         for place in unvisited
-         if place.duration_min <= remaining and place.close_min - place.duration_min >= now),
-        reverse=True,
-    )
     total = 0.0
-    for ratio, value, duration in items:
+    for index, place in enumerate(ordered):
+        if mask is not None and mask & (1 << index):
+            continue
+        if place.close_min - place.duration_min < now:
+            continue
+        ratio = place.value / place.duration_min
+        value, duration = place.value, place.duration_min
         if remaining <= 0:
             break
         if duration <= remaining:
@@ -29,6 +29,12 @@ def h_bound(now: float, day_end: float, unvisited: list[Place] | tuple[Place, ..
             total += ratio * remaining
             remaining = 0
     return total
+
+
+def h_bound(now: float, day_end: float, unvisited: list[Place] | tuple[Place, ...]) -> float:
+    """Return an admissible fractional-knapsack upper bound on remaining value."""
+    ordered = tuple(sorted(unvisited, key=lambda p: p.value / p.duration_min, reverse=True))
+    return _h_bound(now, day_end, ordered)
 
 
 def plan_day(
@@ -42,6 +48,13 @@ def plan_day(
     """Find the highest-value feasible ordered plan for one day."""
     places = tuple(candidates)
     n = len(places)
+    ordered = tuple(sorted(
+        enumerate(places),
+        key=lambda item: item[1].value / item[1].duration_min,
+        reverse=True,
+    ))
+    ordered_places = tuple(place for _, place in ordered)
+    ordered_to_original = tuple(index for index, _ in ordered)
     counter = itertools.count()
     expanded = 0
 
@@ -51,11 +64,15 @@ def plan_day(
         place = places[location]
         return place.lat, place.lon
 
-    def unvisited(mask: int) -> list[Place]:
-        return [places[i] for i in range(n) if not mask & (1 << i)]
+    def bound(now: float, mask: int) -> float:
+        ordered_mask = 0
+        for rank, original in enumerate(ordered_to_original):
+            if mask & (1 << original):
+                ordered_mask |= 1 << rank
+        return _h_bound(now, day_end_min, ordered_places, ordered_mask)
 
     # Entry: negative f, tie-breaker, is_goal, g, now, location, mask, path.
-    heap = [(-h_bound(day_start_min, day_end_min, places), next(counter), False,
+    heap = [(-bound(day_start_min, 0), next(counter), False,
              0.0, day_start_min, -1, 0, ())]
     best: dict[tuple[int, int], float] = {}
     while heap:
@@ -89,7 +106,7 @@ def plan_day(
             if next_key in best and best[next_key] <= visit_end:
                 continue
             stop = Stop(place, travel, arrival, visit_start, visit_end)
-            priority = next_value + h_bound(visit_end, day_end_min, unvisited(next_mask))
+            priority = next_value + bound(visit_end, next_mask)
             heapq.heappush(heap, (-priority, next(counter), False, next_value,
                                   visit_end, index, next_mask, path + (stop,)))
 
